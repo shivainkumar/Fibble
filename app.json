@@ -1,0 +1,11 @@
+{
+  "expo": {
+    "name": "Fibble-final",
+    "slug": "Fibble-final",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  },
+  "name": "Fibble-final"
+}
