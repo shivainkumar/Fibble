@@ -1,10 +1,11 @@
 import {createAppContainer, createSwitchNavigator} from 'react-navigation';
 import { StatusBar, StyleSheet, Text, Touchable, ActivityIndicator, View } from 'react-native'
-import React, {useState, useEffect} from 'react'
+import React, {useState, useEffect} from 'react';
 import AuthNavigator from './auth-navigation';
 import AppNavigator from './app-navigation';
-import app from "../../firebase"
+import app from "../../firebase";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+
 
 
 class AuthLoadingScreen extends React.Component {
@@ -40,7 +41,10 @@ const RootNavigator = createSwitchNavigator(
   {
     AuthLoading: AuthLoadingScreen,
     Auth: AuthNavigator,
-    App: AppNavigator,
+    App:AppNavigator
+      // <Provider store={store}>
+      //   <AppNavigator />
+      // </Provider> 
   },
   {
     initialRouteName: 'AuthLoading'

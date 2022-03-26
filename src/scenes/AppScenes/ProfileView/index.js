@@ -22,20 +22,37 @@ const ProfileView = (props) => {
 
     useEffect(async() => {
         fetchRecipes()
+        checkFollowing()
     }, [])
 
 
-    const checkFollowing = () => {
+    const checkFollowing = async() => {
+        const docRef = doc(db, "Following", getAuth(app).currentUser.uid);
+        const colRef = collection(docRef, "userFollowing");
         
-        
+        const documentSnapshots = await getDocs(colRef);
+        let tempdata = [];
+        documentSnapshots.forEach((doc) => {
+            console.log("following", doc.id);
+            tempdata.push(doc.id)
+        });
+        console.log(tempdata);
+        if (tempdata.includes(user.id)) {
+            setFollowing(true)
+        } else {
+            setFollowing(false)
+        }
     }
 
+
+    const fetchFollowing = async() =>{
+      
+    }
     //fetches a list of recipes by the user
     const fetchRecipes = async() =>{
         setLoading(true)
-        const docRef = doc(db, "recipes",  user.id);
-        const colRef = collection(docRef, "userPosts");
-        const q = query(colRef, orderBy("createdOn", "desc"), limit(5))
+        const colRef = collection(db, "recipesAll")
+        const q = query(colRef, where("author", "==", user.id), orderBy("createdOn", "desc"), limit(5))
         const documentSnapshots = await getDocs(q);
         let tempdata = [];
         setLastVisible(documentSnapshots.size)
@@ -50,8 +67,7 @@ const ProfileView = (props) => {
     }
 
     const fetchMoreRecipes = async() =>{
-        const docRef = doc(db, "recipes",  user.id);
-        const colRef = collection(docRef, "userPosts");
+        const colRef = collection(db, "recipesAll")
         const q = query(colRef, orderBy("createdOn", "desc"), startAfter(lastVisible), limit(5))
         const documentSnapshots = await getDocs(q);
         let tempdata = data;
@@ -128,7 +144,7 @@ const ProfileView = (props) => {
                                 position: 'absolute',
                                 marginHorizontal: 10
                             }} onPress={() => props.navigation.goBack()}>
-                            <Ionicons name='chevron-back' color={Colors.SECONDARY} size={30} />
+                            <Ionicons name='chevron-back' color={Colors.SECONDARY} size={30} style={{backgroundColor: Colors.WHITE, marginTop: 10, opacity: 0.9, borderRadius: 5}}/>
                         </TouchableOpacity>
                         <View style={styles.userInfoContainer}>
                             <View style={{width: '40%'}}>
@@ -214,11 +230,13 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         width: '100%',
         alignItems: 'center',
-        marginTop: 10,
+        paddingVertical: 10,
+        backgroundColor: Colors.SECONDARY
     },
     userInfoContainer:{
         marginTop: 50,
-        flexDirection: 'row'
+        flexDirection: 'row',
+       
     },
     name:{
         fontSize: 23,
@@ -233,8 +251,8 @@ const styles = StyleSheet.create({
     followButton:{
         width: '100%',
         height: 30,
-        borderWidth: 1,
-        borderColor: Colors.SECONDARY,
+        
+        backgroundColor: Colors.WHITE,
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 8,
@@ -244,7 +262,7 @@ const styles = StyleSheet.create({
         width: '100%',
         height: 30,
         borderWidth: 1,
-        borderColor: Colors.SECONDARY,
+        borderColor: Colors.WHITE,
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 8,

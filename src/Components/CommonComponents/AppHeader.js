@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
 import React from 'react';
 import { Ionicons } from '@expo/vector-icons';
-
+import * as Colors from '../../styles/colors'
 
 const AppHeader = () => {
   return (
@@ -21,13 +21,14 @@ const styles = StyleSheet.create({
         height: 70,
         width: '100%',
         flexDirection: 'row',
-        marginHorizontal: 20,
         justifyContent: 'space-between',
         alignItems: 'center',
-        top: 0
+        top: 0,
+        backgroundColor: Colors.SECONDARY,
     },
     logo:{
-        width: "50%",
-        height: '70%',
+        width: "40%",
+        height: '60%',
+        marginHorizontal: 20
     },
 });

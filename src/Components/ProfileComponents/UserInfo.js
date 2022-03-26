@@ -1,16 +1,17 @@
-import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, Button } from 'react-native';
 import React, {useState} from 'react'; 
 import * as Colors from '../../styles/colors';
 import * as ImagePicker from 'expo-image-picker'; 
 import { Ionicons } from '@expo/vector-icons';
 import { backgroundColor, borderLeftColor } from 'react-native/Libraries/Components/View/ReactNativeStyleAttributes';
-import { updateProfile } from "firebase/auth";
+import { updateProfile, signOut, getAuth } from "firebase/auth";
 import { NavigationContext } from 'react-navigation';
+import {app} from '../../../firebase'
 
 
 const UserInfo = ({user, navigation}) => {
     const [image, setImage] = useState(user.photoURL);
-    console.log(user.photoURL);
+  
     const pickImage = async () => {
         // No permissions request is necessary for launching the image library
         let result = await ImagePicker.launchImageLibraryAsync({
@@ -19,9 +20,6 @@ const UserInfo = ({user, navigation}) => {
           aspect: [4, 3],
           quality: 1,
         });
-    
-        console.log(result.uri);
-    
         if (!result.cancelled) {
           setImage(result.uri);
           handleUpdateProfilePicture();
@@ -32,13 +30,27 @@ const UserInfo = ({user, navigation}) => {
             photoURL: image
         })
     }
+
+    const handleSignOut = () =>{
+        signOut(getAuth(app))
+        .catch(error => alert(error.message))
+    }
     return (
+        <View>
         <View style={styles.container}>
-            <TouchableOpacity onPress={() => pickImage()}>
-                <Image style={styles.image} source={{uri: image}}/>
-            </TouchableOpacity>
-            <Text style={styles.name}>{user.displayName}</Text> 
+            <View style={styles.profileInfoContainer}> 
+                <TouchableOpacity onPress={() => pickImage()}>
+                    <Image style={styles.image} source={{uri: image}}/>
+                </TouchableOpacity>
+                <View>
+                    <Text style={styles.name}>{user.displayName}</Text> 
+                    <Text style={styles.bio}>foooooooood</Text>
+                    <TouchableOpacity style={{width: "100%", padding: 7, backgroundColor: Colors.WHITE, alignItems: 'center', justifyContent: 'center', borderRadius: 15}}>
+                        <Text style={{color: Colors.SECONDARY}}>Settings</Text>
+                    </TouchableOpacity>
+                </View>
             
+            </View>
             <View style={{flexDirection: 'row',width:'70%', height: 80, justifyContent: 'space-between'}}>
                 <View style={{justifyContent: 'center', alignItems: 'center'}}>
                     <Text style={styles.labelNumber}>
@@ -65,22 +77,22 @@ const UserInfo = ({user, navigation}) => {
                     </Text>
                 </View>
             </View>
+
             <TouchableOpacity onPress={() => handleSignOut()}>
-                            <Text>
-                                Sign out
-                            </Text>
-                        </TouchableOpacity>
-            <Text style={{width: '95%', fontSize: 20, fontWeight: 'bold'}}>
-                My Recipe
-            </Text>
-           
-            <TouchableOpacity style={styles.addButton} onPress={()=> navigation.navigate('CreateRecipe')}>
-                <Ionicons name='add' color={Colors.SECONDARY} size={25}/>
-                <Text style={{fontSize: 16, fontWeight: 'bold', marginLeft: 10, color: Colors.SECONDARY}}>Create New Recipe</Text>
+                <Text>
+                    Sign out
+                </Text>
             </TouchableOpacity>
-            
-        
         </View>
+        <Text style={{width: '95%', fontSize: 20, fontWeight: 'bold', marginTop: 10, marginHorizontal: 20}}>
+            My Recipe
+        </Text>
+
+      <TouchableOpacity style={styles.addButton} onPress={()=> navigation.navigate('CreateRecipe')}>
+          <Ionicons name='add' color={Colors.SECONDARY} size={25}/>
+          <Text style={{fontSize: 16, fontWeight: 'bold', marginLeft: 10, color: Colors.SECONDARY}}>Create New Recipe</Text>
+      </TouchableOpacity>
+      </View>
     );
 };
 
@@ -91,12 +103,23 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         width: '100%',
         alignItems: 'center',
-        height: 310,
-        marginTop: 10
+        backgroundColor: Colors.SECONDARY,
+        paddingBottom: 20,
+        borderBottomLeftRadius: 20,
+        borderBottomRightRadius: 20
+    },
+
+    profileInfoContainer:{
+        flexDirection: 'row',
+        justifyContent: 'space-evenly',
+        width: '100%'
     },
     name:{
         fontSize: 23,
         fontWeight: 'bold'
+    },
+    bio:{
+        color: Colors.WHITE
     },
     image:{
         width: 100,
@@ -119,16 +142,8 @@ const styles = StyleSheet.create({
     },
     labelNumber :{
         fontWeight: 'bold',
-        fontSize: 18
+        fontSize: 18,
+        color: Colors.WHITE
     },
-    addButton:{
-        flexDirection: 'row', 
-        alignItems: 'center', 
-        marginVertical: 7, 
-        backgroundColor: Colors.PRIMARY, 
-        alignSelf: 'flex-start', 
-        margin: 7,
-        padding: 5,
-        borderRadius: 10
-    }
+    
 });

@@ -1,9 +1,9 @@
-import { SafeAreaView, ScrollView, StyleSheet, Text, View, SectionList } from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, Text, View, SectionList, LogBox, Image } from 'react-native';
 import React, { useState } from 'react';
 import * as Colors from '../../styles/colors';
 import { FlatList } from 'react-native-gesture-handler';
 
-const RecipeDescription = ({recipe}) =>{
+const RecipeDescription = ({recipe, author}) =>{
     const [ings, setIngs] = useState([
         {
             title: "Ingredients",
@@ -13,7 +13,7 @@ const RecipeDescription = ({recipe}) =>{
     const Ingredients = ({ingredients}) =>{
             return(
                 <Text>
-                    {ingredients}
+                    {ingredients.ingredient}
                 </Text>
             )
             
@@ -26,6 +26,8 @@ const RecipeDescription = ({recipe}) =>{
                     {item.title}
                 </Text>
                 <FlatList
+                scrollEnabled={false}
+
                 data={item.data}
                 renderItem={({item, index}) => 
                 <View style={{flexDirection: 'row', alignItems: 'center', width: '90%'}}>
@@ -39,7 +41,14 @@ const RecipeDescription = ({recipe}) =>{
             </View>
         )
     }
-    
+
+    const Tags = ({item}) => {
+        return(
+        <View style={{flexDirection: 'row', backgroundColor: Colors.SECONDARY, paddingHorizontal: 10, paddingVertical: 7, borderRadius: 20, margin: 2}}>
+            <Text style={styles.tag}>#{item}</Text>
+        </View>)
+    }
+    LogBox.ignoreLogs(['VirtualizedLists should never be nested inside plain ScrollViews with the same orientation because it can break windowing and other fu']);
     return(
         <View style={styles.container}>
             <Text style={styles.title}>{recipe.title}</Text>
@@ -80,6 +89,8 @@ const RecipeDescription = ({recipe}) =>{
                     Ingredients
                 </Text>
                 <SectionList
+                scrollEnabled={false}
+
                 sections={ings}
                 keyExtractor={(item, index) => item + index}
                 renderItem={({ item }) => <Ingredients ingredients={item} />}
@@ -93,14 +104,46 @@ const RecipeDescription = ({recipe}) =>{
                     Procedure
                 </Text>
                 <FlatList 
+                scrollEnabled={false}
                 data={recipe.procedure}
                 renderItem={ProcedureSections}
-                keyExtractor={item => item.index}
+                keyExtractor={(item, index) => item + index}
                 /> 
                 {/* <Text>
                     {recipe.procedure}
                 </Text> */}
             </View>
+            {recipe.tag?
+                <View>
+                    <Text style={styles.headings}>
+                        Tags
+                    </Text>
+                    <FlatList 
+                        scrollEnabled={false}
+                        data={recipe.tag}
+                        keyExtractor={(item, index) => item + index}
+                        renderItem={Tags}
+                        style={styles.tagList}
+                        contentContainerStyle={{width: "100%", justifyContent: 'flex-start', flexDirection: 'row', flexWrap: 'wrap' }}
+                    />
+                </View>:
+                null
+            }
+            
+            <View style={styles.ingredients}>
+                <Text style={styles.headings}>
+                    Author
+                </Text>
+                <View style={{flexDirection: 'row', width: "100%", marginTop: 15}}>
+                    <Image style={{height: 120, width: 120, borderRadius: 60, alignItems: 'center', marginRight: 15}} source={{uri: author.photoURL}}/>
+                    <View style={{justifyContent: 'center'}}>
+                        <Text style={{fontSize: 22, fontWeight: 'bold'}}>{author.displayName}</Text>
+                        <Text>{author.bio}</Text>
+                    </View>
+
+                </View>
+            </View>
+            
         </View>
     )
 }
@@ -142,11 +185,13 @@ const styles = StyleSheet.create({
         elevation: 4 
     },
     headings:{
+        fontSize: 23,
         fontWeight: 'bold',
-        fontSize: 18,
-        paddingTop: 20,
-        paddingBottom: 7
+        color: 'black'
     },
+    ingredients:{
+        marginVertical: 10
+    },  
     procedureSections: {
         width: "100%",
         alignItems: 'center',
@@ -164,5 +209,16 @@ const styles = StyleSheet.create({
     procedureSectionsStep: {
         marginLeft: 10,
         marginBottom: 10
-    }
+    },
+    tagList:{
+        marginTop: 10,
+        width: "100%",
+        
+    },
+    tag:{
+        backgroundColor: Colors.SECONDARY,
+        color: "white",
+        fontSize: 18,
+        marginRight: 10
+    },
 });

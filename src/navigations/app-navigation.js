@@ -1,37 +1,39 @@
 import {createBottomTabNavigator} from 'react-navigation-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import * as Colors from '../styles/colors';
-import TrendingScreen from '../scenes/AppScenes/Trending';
+import TrendingScreen from './trending-navigation';
 import FeedScreen from './feed-navigation'
 import AboutScreen from '../scenes/AppScenes/About';
 import MyProfileScreen from './profile-navigation'
 import SearchScreen from './search-navigation';
+import React from 'react';
+import store from '../Redux/store';
 
 const TabNavigatorConfig = {
-  initialRouteName: 'Feed',
+  initialRouteName: 'Home',
   header: null,
   headerMode: 'none',
 };
 
 const RouteConfigs = {
-  Feed:{
-    screen:FeedScreen,
-    navigationOptions:{
-      tabBarLabel: "Feed",
-      tabBarOptions: {
-        activeTintColor: Colors.SECONDARY,
-      },
-      tabBarIcon: (tabInfo) => {
-        return (
-          <Ionicons
-            name="home"
-            size={24}
-            color={tabInfo.focused ?  Colors.SECONDARY : "#666"}
-          />
-        );
-      },
-    }
-  },
+  // Feed:{
+  //   screen:FeedScreen,
+  //   navigationOptions:{
+  //     tabBarLabel: "Feed",
+  //     tabBarOptions: {
+  //       activeTintColor: Colors.SECONDARY,
+  //     },
+  //     tabBarIcon: (tabInfo) => {
+  //       return (
+  //         <Ionicons
+  //           name="home"
+  //           size={24}
+  //           color={tabInfo.focused ?  Colors.SECONDARY : "#666"}
+  //         />
+  //       );
+  //     },
+  //   }
+  // },
   Home:{
     screen:TrendingScreen,
     navigationOptions:{
@@ -94,3 +96,10 @@ const RouteConfigs = {
 const AppNavigator = createBottomTabNavigator(RouteConfigs, TabNavigatorConfig);
 
 export default AppNavigator;
+// export default class App extends React.Component {
+//   render() {
+//     return (
+//         <AppNavigator />
+//     );
+//   }
+// }

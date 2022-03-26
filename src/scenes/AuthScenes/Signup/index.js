@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react'
-import { StatusBar, SafeAreaView, TextInput, StyleSheet, Text, Touchable, TouchableOpacity, View, Image } from 'react-native'
+import { StatusBar, Alert, TextInput, StyleSheet, Text, ScrollView, TouchableOpacity, View, Image, SafeAreaView } from 'react-native'
 import { useNavigation } from '@react-navigation/core'
 import * as ImagePicker from 'expo-image-picker'; 
 import { AntDesign } from '@expo/vector-icons';
@@ -7,8 +7,7 @@ import {app, db, storage} from '../../../../firebase'
 import { getAuth, createUserWithEmailAndPassword, onAuthStateChanged, updateProfile } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore"; 
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
-
-
+import * as Colors from "../../../styles/colors"
 
 const Signup = ({navigation}) => {
   
@@ -64,62 +63,97 @@ const Signup = ({navigation}) => {
 
     const handleSignUp = async() => {
         try {
-            const userCredentials = await createUserWithEmailAndPassword(auth, email, password)
+            const userCredentials = await createUserWithEmailAndPassword(auth, email.trim(), password.trim())
             //uploads an image to the storage named as the Uid and updates the photoURL to the profile
             await uploadImage(userCredentials)
-
             //creates a database record
             await createUserInDatabase(userCredentials.user);  
         } catch (error) {
-            console.error(error);
+            triggerAlert(error.code)
+            console.log(error.code);
         }
             
     }
 
-        const ImageButton = () =>{
-            if (image == null) {
-                return(
-                    <AntDesign name="pluscircleo" size={30} color="black" />
-                )
-            } else {
-                return(
+    const ImageButton = () =>{
+        if (image == null) {
+            return(
+                <View style={{alignItems: 'center', justifyContent: 'center', height: 80, width: "100%", borderRadius:40, padding: 20, backgroundColor: Colors.SECONDARY}}>
+                    <AntDesign name="camera" size={30} color={Colors.WHITE} />
+                </View>
+                
+            )
+        } else {
+            return(
+                <View style={{padding: 15, backgroundColor: Colors.SECONDARY}}>
                     <Image style={{width: 100, height: 100}} source={{ uri: image }}/>
-                )
-            }
+                </View>
+            )
         }
+    }
+    
+    const triggerAlert = (errorCode) =>{
+        let errorMessage = ""
+
+        switch (errorCode) {
+            case "auth/invalid-email":
+                errorMessage = "Invalid Email"
+                break;
+            case "auth/invalid-password":
+                errorMessage = "Invalid Password"
+                break;
+            default:
+                break;
+        }
+        Alert.alert(
+            "Invalid Input",
+            errorMessage,
+            [
+              { text: "Try again", onPress: () => console.log("OK Pressed") }
+            ]
+          );
+    }
 
     return (
-        <SafeAreaView style={styles.container}>
-            <TouchableOpacity onPress={() => pickImage()}>
+        <View style={styles.container}>
+            <View style={{width: "100%", alignItems: "flex-start", flex: 1}}>
+                <Text style={{fontSize: 28, color: Colors.WHITE, fontWeight: "bold"}}>Create {'\n'}New Account</Text>
+            </View>
+            {/* <Image style={{height: 150, width: 150}} source={require('../../../assets/welcomeImage2.png')}/> */}
+            <TouchableOpacity  onPress={() => pickImage()}>
                 <ImageButton />
-                <Text>
-                    Pick Image
-                </Text>
             </TouchableOpacity>
-
-
-            <View style={styles.inputContainer}>
+            <View behavior='padding' style={styles.inputContainer}>
+                
                 <TextInput 
+                style={styles.inputs}
+                placeholderTextColor={Colors.WHITE}
+                    
                     placeholder='Name'
                     value={displayName}
                     onChangeText={text =>setName(text)}></TextInput>
                 <TextInput 
+                    style={styles.inputs}
+                    placeholderTextColor={Colors.WHITE}
                     placeholder='Email'
                     value={email}
                     onChangeText={text =>setEmail(text)}></TextInput>
                 <TextInput 
+                    placeholderTextColor={Colors.WHITE}
+                    style={styles.inputs}
                     placeholder='Password' 
                     value={password}
                     onChangeText={text =>setPassword(text)}
                     secureTextEntry></TextInput>
+                
+                  
+                <TouchableOpacity style={styles.button} onPress={() => handleSignUp()}>
+                    <Text style={{color: Colors.WHITE}}>
+                        Sign up
+                    </Text>
+                </TouchableOpacity>
             </View>
-            
-            <TouchableOpacity onPress={() => handleSignUp()}>
-                <Text>
-                    Sign up
-                </Text>
-            </TouchableOpacity>
-        </SafeAreaView>
+        </View>
     )
 }
 
@@ -127,13 +161,34 @@ export default Signup
 
 const styles = StyleSheet.create({
     container:{
-        marginTop: StatusBar.currentHeight,
         flex: 1,
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        backgroundColor: Colors.PRIMARY,
+        paddingHorizontal: 50,
+        paddingVertical: 25
     },
     inputContainer:{
-        justifyContent: 'center',
+        alignItems: 'center',
+        width: '100%',
+        flex: 3,
+        marginVertical: 10
+    },
+    inputs:{
+        color: Colors.SECONDARY,
+        paddingHorizontal: 15,
+        paddingVertical: 5,
+        marginVertical: 10,
+        borderRadius: 10,
+        borderBottomWidth: 1,
+        borderBottomColor: Colors.SECONDARY,
+        width: '100%'
+    },
+    button:{
+        width:"100%",
+        backgroundColor: Colors.SECONDARY,
+        padding: 20,
+        marginTop: 20,
         alignItems: 'center'
     }
 })

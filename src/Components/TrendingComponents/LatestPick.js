@@ -1,20 +1,44 @@
-import React from 'react'
-import { StyleSheet, Text, View, Image } from 'react-native'
+import { collection, getDoc } from 'firebase/firestore';
+import React, {useEffect, useState} from 'react'
+import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native'
+import { db } from '../../../firebase';
+import { doc } from 'firebase/firestore';
+import * as Colors from '../../styles/colors'
 
 
-const LatestPicks = ({ item }) => {
-        return(
-            <View style={styles.latestPicksListItems}>
-                <Image style={styles.latestPicksThumnail} source={require('../../assets/pexels-dzenina-lukac-1583884.jpg')}/>
-                <View style={styles.latestPicksInfo}>
-                    <Text style={styles.latestPicksListTitle}>{item.RecipeName}</Text>
-                    <Text>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Viverra lorem sem non lorem massa non. Massa quis ultrices lectus arcu in imperdiet quis..
-                    </Text> 
-                </View>
-            </View> 
-        )
+const LatestPicks = ({navigation, item} ) => {
+    const [date, setDate] = useState(new Date(item.createdOn))
+    const [user, setUser] = useState({})
+    useEffect(() => {
+      fetchUserInfo()
+    }, [item.author])
     
+
+    const fetchUserInfo = async() =>{
+        const docRef = doc(db, "users", item.author)
+        const documentSnapshots = await getDoc(docRef)
+        await setUser(documentSnapshots.data())
+    }
+        return(
+            <TouchableOpacity onPress={() => navigation.navigate('RecipeView', item)} style={styles.latestPicksListItems}>
+                <Image style={styles.latestPicksThumnail} source={{uri: item.downloadURL}}/>
+                <View style={styles.latestPicksInfo}>
+                    <Text style={styles.latestPicksListTitle}>{item.title}</Text>
+                    <Text>
+                        {item.shortDescription}
+                    </Text> 
+
+                    <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 10}}>
+                        <Image style={{height: 30, width: 30, borderRadius: 15}} source={{uri: user.photoURL}}/>
+                        <Text style={{marginLeft: 15, fontSize: 18}}>{user.displayName}</Text>
+                    </View>
+                    <Text style={{color: Colors.PRIMARY, opacity: 0.6, marginVertical: 10}}>{date.getDate()+
+          "/"+(date.getMonth()+1)+
+          "/"+date.getFullYear()}</Text>
+                </View>
+                
+            </TouchableOpacity> 
+        )
     };
 
 export default LatestPicks
@@ -35,13 +59,11 @@ const styles = StyleSheet.create({
         width: 300,
         borderRadius: 30,
         shadowColor: 'rgb(0, 0, 0)',
-       
         shadowOpacity: 0.2,
         shadowRadius: 10,
         elevation: 5,
         backgroundColor: 'white',
-
-        padding: 10,
+        
         margin: 10,
     },
     latestPicksThumnail:{
@@ -52,7 +74,8 @@ const styles = StyleSheet.create({
     },
     latestPicksListTitle:{
         fontSize: 20,
-        marginBottom: 9
+        marginBottom: 9,
+        color: 'black'
     },
     latestPicksListDescription:{
         width: "100%"

@@ -5,6 +5,7 @@ import { getAuth, signOut } from "firebase/auth";
 import UserInfo from '../../../Components/ProfileComponents/UserInfo';
 import AppHeader from '../../../Components/CommonComponents/AppHeader';
 import { FlatList } from 'react-native-gesture-handler';
+import { Ionicons } from '@expo/vector-icons';
 import RecipeSmall from '../../../Components/TrendingComponents/RecipeSmall';
 import { collection, query, where, getDocs, doc, orderBy, limit, startAfter, startAt } from 'firebase/firestore';
 import * as Colors from '../../../styles/colors'
@@ -24,9 +25,10 @@ const MyProfile = ({navigation}) => {
 
     const fetchData = async() =>{
         setLoading(true)
-        const docRef = doc(db, "recipes", getAuth(app).currentUser.uid);
-        const colRef = collection(docRef, "userPosts");
-        const q = query(colRef, orderBy("createdOn", "desc"), limit(5))
+        //const docRef = doc(db, "recipes", getAuth(app).currentUser.uid);
+        //const colRef = collection(docRef, "userPosts");
+        const colRef = collection(db, "recipesAll")
+        const q = query(colRef, where("author", "==", getAuth(app).currentUser.uid), orderBy("createdOn", "desc"), limit(5))
         const documentSnapshots = await getDocs(q);
         let tempdata = [];
         setLastVisible(documentSnapshots.size)
@@ -41,9 +43,9 @@ const MyProfile = ({navigation}) => {
     }
 
     const fetchMoreData = async() =>{
-        const docRef = doc(db, "recipes", getAuth(app).currentUser.uid);
-        const colRef = collection(docRef, "userPosts");
-        const q = query(colRef, orderBy("createdOn", "desc"), startAfter(lastVisible), limit(5))
+        
+        const colRef = collection(db, "recipesAll")
+        const q = query(colRef, where("author", "==", getAuth(app).currentUser.uid), startAfter(lastVisible), orderBy("createdOn", "desc"), limit(5))
         const documentSnapshots = await getDocs(q);
         let tempdata = data;
         console.log("before ",tempdata);
@@ -56,10 +58,7 @@ const MyProfile = ({navigation}) => {
         setData(tempdata)
     }
 
-    const handleSignOut = () =>{
-        signOut(getAuth(app))
-        .catch(error => alert(error.message))
-    }
+   
 
     const renderItem = ({ item }) => (
         <RecipeSmall recipe={item} navigation={navigation}/>
@@ -82,7 +81,14 @@ const MyProfile = ({navigation}) => {
                     />
                   }
                 renderItem={renderItem}
-                ListHeaderComponent={<UserInfo user={getAuth(app).currentUser} navigation={navigation}/>}
+                ListHeaderComponent={
+                    <View>
+                        <UserInfo user={getAuth(app).currentUser} navigation={navigation}/>
+                        
+                    </View>            
+            }
+            ListHeaderComponentStyle={{flex: 1}}
+            //contentContainerStyle={{flex: 3}}
                 ListFooterComponent={
                     <View>
                         <Button title='Load more' color={Colors.SECONDARY} onPress={() => fetchMoreData()}/> 
@@ -118,7 +124,15 @@ const styles = StyleSheet.create({
     },
     scrollviewContainer:{
        
-        width: '100%',
-        flex: 1,      
+       
     },
+    addButton:{
+        flexDirection: 'row', 
+        alignItems: 'center', 
+        marginVertical: 7, 
+        alignSelf: 'flex-start', 
+        margin: 7,
+        padding: 5,
+        borderRadius: 10
+    }
 })

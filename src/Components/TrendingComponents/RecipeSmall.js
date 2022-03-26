@@ -37,8 +37,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexDirection: 'row',
     padding: 10,
-    margin: 7,
-    borderRadius: 10
+    marginVertical: 7,
+    borderRadius: 30,
+    shadowColor: 'rgb(0, 0, 0)',
+    
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
+    elevation: 7,
+    backgroundColor: 'white',
+    
   },
   userName:{
     fontSize: 14,
