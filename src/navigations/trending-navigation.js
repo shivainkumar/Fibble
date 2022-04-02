@@ -4,21 +4,16 @@ import RecipeViewScreen from '../scenes/AppScenes/RecipeView';
 import RecipeListScreen from '../scenes/AppScenes/RecipeList'
 
 const TrendingNavigationConfig = {
-    initialRouteName: 'Trending',
+    initialRouteName: 'TrendingScreen',
     header: null,
     headerMode: 'none',
   };
 
   const RouteConfigs = {
-    Trending:{
-      screen: TrendingScreen
-    },
-    RecipeList:{
-      screen: RecipeListScreen
-    },
-    RecipeView:{
-      screen: RecipeViewScreen,
-    },
+  TrendingScreen,
+  RecipeListScreen,
+  RecipeViewScreen,
+  
 };
 
 const TrendingNavigator = createStackNavigator(RouteConfigs, TrendingNavigationConfig);

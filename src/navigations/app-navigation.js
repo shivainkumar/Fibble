@@ -37,14 +37,14 @@ const RouteConfigs = {
   Home:{
     screen:TrendingScreen,
     navigationOptions:{
-      tabBarLabel: "Trending",
+      tabBarLabel: "Home",
       tabBarOptions: {
         activeTintColor: Colors.SECONDARY,
       },
       tabBarIcon: (tabInfo) => {
         return (
           <Ionicons
-            name="trending-up-outline"
+            name="home"
             size={24}
             color={tabInfo.focused ?  Colors.SECONDARY : "#666"}
           />

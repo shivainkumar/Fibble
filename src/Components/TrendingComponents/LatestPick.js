@@ -4,14 +4,16 @@ import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native'
 import { db } from '../../../firebase';
 import { doc } from 'firebase/firestore';
 import * as Colors from '../../styles/colors'
+import { Ionicons } from '@expo/vector-icons';
 
 
-const LatestPicks = ({navigation, item} ) => {
+
+const LatestPicks = ({navigation, item, itemID} ) => {
     const [date, setDate] = useState(new Date(item.createdOn))
     const [user, setUser] = useState({})
     useEffect(() => {
       fetchUserInfo()
-    }, [item.author])
+    }, [])
     
 
     const fetchUserInfo = async() =>{
@@ -20,11 +22,11 @@ const LatestPicks = ({navigation, item} ) => {
         await setUser(documentSnapshots.data())
     }
         return(
-            <TouchableOpacity onPress={() => navigation.navigate('RecipeView', item)} style={styles.latestPicksListItems}>
+            <TouchableOpacity onPress={() => navigation.navigate('RecipeViewScreen', {...item, itemID})} style={styles.latestPicksListItems}>
                 <Image style={styles.latestPicksThumnail} source={{uri: item.downloadURL}}/>
                 <View style={styles.latestPicksInfo}>
                     <Text style={styles.latestPicksListTitle}>{item.title}</Text>
-                    <Text>
+                    <Text numberOfLines={2}>
                         {item.shortDescription}
                     </Text> 
 
@@ -32,11 +34,15 @@ const LatestPicks = ({navigation, item} ) => {
                         <Image style={{height: 30, width: 30, borderRadius: 15}} source={{uri: user.photoURL}}/>
                         <Text style={{marginLeft: 15, fontSize: 18}}>{user.displayName}</Text>
                     </View>
-                    <Text style={{color: Colors.PRIMARY, opacity: 0.6, marginVertical: 10}}>{date.getDate()+
-          "/"+(date.getMonth()+1)+
-          "/"+date.getFullYear()}</Text>
+                    {/* <Text style={{color: Colors.PRIMARY, opacity: 0.6, marginVertical: 10}}>{date.getDate()+
+                        "/"+(date.getMonth()+1)+
+                        "/"+date.getFullYear()}</Text> */}
+                    
                 </View>
-                
+                <View style={{flexDirection: 'row', alignItems: 'center',  margin: 5, position: 'absolute', top: 10, right: 20, backgroundColor: Colors.WHITE, padding: 5, borderRadius: 8}}>
+                        <Ionicons name='heart' color={Colors.SECONDARY} size={25}/>
+                        <Text style={{color: Colors.SECONDARY, paddingLeft: 10}}>{item.likes}</Text>
+                </View>
             </TouchableOpacity> 
         )
     };
@@ -50,7 +56,7 @@ const styles = StyleSheet.create({
     },
     latestPicksList:{
         width: "100%",
-        height:400
+  
     },
     latestPicksListItems:{
         marginRight: 25,
@@ -63,7 +69,7 @@ const styles = StyleSheet.create({
         shadowRadius: 10,
         elevation: 5,
         backgroundColor: 'white',
-        
+        paddingBottom: 15,
         margin: 10,
     },
     latestPicksThumnail:{

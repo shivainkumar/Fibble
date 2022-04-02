@@ -19,10 +19,13 @@ const ProfileView = (props) => {
     const [loadingFollowStatus, setLoadingFollowStatus] = useState(false)
     const [lastVisible, setLastVisible] = useState(0)
     const [following, setFollowing] = useState(false)
+    const [followersUids, setFollowersUids] = useState([])
+    const [followingUids, setFollowingUids] = useState([])
 
     useEffect(async() => {
         fetchRecipes()
         checkFollowing()
+        fetchFollowerFollowingData()
     }, [])
 
 
@@ -33,7 +36,7 @@ const ProfileView = (props) => {
         const documentSnapshots = await getDocs(colRef);
         let tempdata = [];
         documentSnapshots.forEach((doc) => {
-            console.log("following", doc.id);
+            
             tempdata.push(doc.id)
         });
         console.log(tempdata);
@@ -45,9 +48,6 @@ const ProfileView = (props) => {
     }
 
 
-    const fetchFollowing = async() =>{
-      
-    }
     //fetches a list of recipes by the user
     const fetchRecipes = async() =>{
         setLoading(true)
@@ -87,10 +87,15 @@ const ProfileView = (props) => {
     const onFollow = async() => {
         setLoadingFollowStatus(true)
         try {
-            const docRef = doc(db, "Following", getAuth(app).currentUser.uid);
-            const colRef = collection(docRef, "userFollowing");
-            const ss = doc(colRef, user.id)
-            await setDoc(ss, {})
+            const docRefFollowing = doc(db, "Following", getAuth(app).currentUser.uid);
+            const colRefFollowing = collection(docRefFollowing, "userFollowing");
+            const a = doc(colRefFollowing, user.id)
+            await setDoc(a, {})
+            
+            const docRefFollowers = doc(db, "Followers", user.id);
+            const colRefFollowers = collection(docRefFollowers, "userFollowers");
+            const b = doc(colRefFollowers, getAuth(app).currentUser.uid)
+            await setDoc(b, {})
 
         } catch (error) {
             console.error(error);
@@ -104,15 +109,41 @@ const ProfileView = (props) => {
     const onUnfollow = async () =>{
         setLoadingFollowStatus(true)
         try {
-            const docRef = doc(db, "Following", getAuth(app).currentUser.uid);
-            const colRef = collection(docRef, "userFollowing");
-            const ss = doc(colRef, user.id)
-            await deleteDoc(ss)
+            const docRefFollowing = doc(db, "Following", getAuth(app).currentUser.uid);
+            const colRefFollowing = collection(docRefFollowing, "userFollowing");
+            const a = doc(colRefFollowing, user.id)
+            await deleteDoc(a)
+
+            const docRefFollowers = doc(db, "Followers", user.id);
+            const colRefFollowers = collection(docRefFollowers, "userFollowers");
+            const b = doc(colRefFollowers, getAuth(app).currentUser.uid )
+            await deleteDoc(b)
         } catch (error) {
             console.error(error);
         }
         setFollowing(false)
         setLoadingFollowStatus(false)
+    }
+
+
+    const fetchFollowerFollowingData = async() =>{
+        const docRefFollowers = doc(db, "Followers", user.id);
+        const colRefFollowers = collection(docRefFollowers, "userFollowers");
+        const documentSnapshotsFollowers = await getDocs(colRefFollowers);
+        let tempdataFollowers = [];
+        documentSnapshotsFollowers.forEach((doc) => {
+            tempdataFollowers.push(doc.id)
+        });
+        setFollowersUids(tempdataFollowers)
+
+        const docRefFollowing = doc(db, "Following", user.id);
+        const colRefFollowing = collection(docRefFollowing, "userFollowing");
+        const documentSnapshotsFollowing = await getDocs(colRefFollowing);
+        let tempdataFollowing = [];
+        documentSnapshotsFollowing.forEach((doc) => {
+            tempdataFollowing.push(doc.id)
+        });
+        setFollowingUids(tempdataFollowing)
     }
 
 
@@ -135,7 +166,7 @@ const ProfileView = (props) => {
                     />
                   }
                 renderItem={renderItem}
-                keyExtractor={item => item.docID}
+                keyExtractor={(item, index) => item + index}
                 ListHeaderComponent={
                     <View style={styles.headerContainer}>
                         <TouchableOpacity style={{
@@ -149,22 +180,23 @@ const ProfileView = (props) => {
                         <View style={styles.userInfoContainer}>
                             <View style={{width: '40%'}}>
                                 <Image style={styles.image} source={{uri: user.data.photoURL}}/>
-                                <Text style={styles.name}>{user.data.displayName}</Text> 
                             </View>
                             
-                            <View style={{width: '50%'}}>
+                            <View style={{width: '50%', alignItems: 'center'}}>
+                                <Text style={styles.name}>{user.data.displayName}</Text> 
+
                                 <View style={{flexDirection: 'row',width:'100%', height: 80, justifyContent: 'space-between'}}>
-                                    <View style={{justifyContent: 'center', alignItems: 'center'}}>
+                                    {/* <View style={{justifyContent: 'center', alignItems: 'center'}}>
                                         <Text style={styles.labelNumber}>
                                             50
                                         </Text>
                                         <Text>
                                             Posts
                                         </Text>
-                                    </View>
+                                    </View> */}
                                     <View style={{justifyContent: 'center', alignItems: 'center'}}>
                                         <Text style={styles.labelNumber}>
-                                            50
+                                            {followersUids.length}
                                         </Text>
                                         <Text>
                                             Followers
@@ -172,36 +204,39 @@ const ProfileView = (props) => {
                                     </View>
                                     <View style={{justifyContent: 'center', alignItems: 'center'}}>
                                         <Text style={styles.labelNumber}>
-                                            50
+                                            {followingUids.length}
                                         </Text>
                                         <Text>
                                             Following
                                         </Text>
                                     </View>
                                 </View>
-                                {following?
-                                    <TouchableOpacity onPress={() => onUnfollow()} style={styles.unfollowButton} disabled={loadingFollowStatus? true: false}>
-                                        <Text style={styles.unfollowButtonText}>
-                                            Unfollow
-                                        </Text>
-                                    </TouchableOpacity>:
-                                    <TouchableOpacity onPress={() => onFollow()} style={styles.followButton} disabled={loadingFollowStatus? true: false}>
-                                        <Text style={styles.followButtonText}>
-                                            Follow
-                                        </Text>
-                                    </TouchableOpacity>
-
-                                }       
+                                
                             </View>
-                        </View>                                        
+                        </View> 
+                        {following?
+                            <TouchableOpacity onPress={() => onUnfollow()} style={styles.unfollowButton} disabled={loadingFollowStatus? true: false}>
+                                <Text style={styles.unfollowButtonText}>
+                                    Unfollow
+                                </Text>
+                            </TouchableOpacity>:
+                            <TouchableOpacity onPress={() => onFollow()} style={styles.followButton} disabled={loadingFollowStatus? true: false}>
+                                <Text style={styles.followButtonText}>
+                                    Follow
+                                </Text>
+                            </TouchableOpacity>
+
+                        }                                              
                     </View>
                 }
 
                 ListFooterComponent={
                     <View>
-                        <Button title='Load more' color={Colors.SECONDARY} onPress={() => fetchMoreRecipes()}/>
+                        {lastVisible < 5? 
+                            <Button title='Load more' color={Colors.SECONDARY} onPress={() => fetchMoreData()}/> 
+                            : null
+                    }
                     </View>
-                   
                 }
                 />
 
@@ -240,7 +275,8 @@ const styles = StyleSheet.create({
     },
     name:{
         fontSize: 23,
-        fontWeight: 'bold'
+        fontWeight: 'bold',
+        color: Colors.WHITE
     },
     image:{
         width: 100,
@@ -249,7 +285,7 @@ const styles = StyleSheet.create({
         marginBottom: 10
     },
     followButton:{
-        width: '100%',
+        width: '90%',
         height: 30,
         
         backgroundColor: Colors.WHITE,
@@ -259,7 +295,7 @@ const styles = StyleSheet.create({
         
     },
     unfollowButton:{
-        width: '100%',
+        width: '90%',
         height: 30,
         borderWidth: 1,
         borderColor: Colors.WHITE,
@@ -273,11 +309,12 @@ const styles = StyleSheet.create({
         color: Colors.SECONDARY
     },
     unfollowButtonText: {
-        color: Colors.WHITE
+        color: Colors.WHITE,
     },
     labelNumber :{
         fontWeight: 'bold',
-        fontSize: 18
+        fontSize: 18,
+        color: Colors.WHITE
     },
     addButton:{
         flexDirection: 'row', 

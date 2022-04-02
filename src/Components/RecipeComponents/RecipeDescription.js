@@ -55,32 +55,35 @@ const RecipeDescription = ({recipe, author}) =>{
             <Text style={styles.shortDescription}>
                 {recipe.shortDescription}
             </Text>
-            <View style={styles.info}>
-                <View style={styles.infoNodes}>
-                    <Text style={{fontSize: 20, fontWeight: 'bold', color: Colors.SECONDARY}}>
-                        {recipe.calories}
-                    </Text>
-                    <Text>
-                        Calories
-                    </Text>
-                </View>
-                <View style={styles.infoNodes}>
-                    <Text style={{fontSize: 20, fontWeight: 'bold', color: Colors.SECONDARY}}>
-                        {recipe.serves}
-                    </Text>
-                    <Text>
-                        Serves
-                    </Text>
-                </View>
-                <View style={styles.infoNodes}>
-                    <Text style={{fontSize: 20, fontWeight: 'bold', color: Colors.SECONDARY}}>
-                        300
-                    </Text>
-                    <Text>
-                        Calories
-                    </Text>
-                </View>
-            </View>
+            {recipe.calories != null || recipe.server != null?
+                <View style={styles.info}>
+                    {recipe.calories != null?
+                    <View style={styles.infoNodes}>
+                        <Text style={{fontSize: 20, fontWeight: 'bold', color: Colors.SECONDARY}}>
+                            {recipe.calories}
+                        </Text>
+                        <Text>
+                            Calories
+                        </Text>
+                    </View>:
+                    null
+                    }
+                    {recipe.server != null?
+                    <View style={styles.infoNodes}>
+                        <Text style={{fontSize: 20, fontWeight: 'bold', color: Colors.SECONDARY}}>
+                            {recipe.serves}
+                        </Text>
+                        <Text>
+                            Serves
+                        </Text>
+                    </View>:
+                    null            
+                    }
+                    
+                </View>: 
+                null
+            }
+           
             <Text style={styles.longDescription}>
                 {recipe.longDescription}
             </Text>

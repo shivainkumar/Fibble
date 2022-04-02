@@ -14,9 +14,11 @@ const index = ({navigation}) => {
     const [searching, setSearching] = useState(false)
     const [latestPicks, setLatestPicks] = useState([])
     const [userFollowing, setUserFollowing] = useState([])
-    const [tags, setTags] = useState(["indian", "food", "shishiman", "Vegan", "testtag"])
+    const [tags, setTags] = useState(["indian", "food", "high-protien", "Vegan", "tofu", "spicy", "breakfast", "brunch"])
     const [recipesByFollowing, setRecipesByFollowing] = useState([])
     const [loading, setLoading] = useState(false)
+
+
     const fetchCuisine = async() => {
         const colRef = collection(db, "cuisines")
         const snapshot = await getDocs(colRef)
@@ -35,9 +37,24 @@ const index = ({navigation}) => {
         const documentSnapshots = await getDocs(q);
         let tempdata = [];
         documentSnapshots.forEach((doc) => {
-            tempdata.push(doc.data())
+            tempdata.push({docID: doc.id, docData: doc.data()})
         });
         setLatestPicks(tempdata)
+       
+    }
+
+    const fetchRecipesByFollowing = async(users) =>{
+        if (users) {
+            const colRef = collection(db, "recipesAll")
+            const q = query(colRef,where("author", "in", users), orderBy("createdOn", "desc"), limit(10))
+            const documentSnapshots = await getDocs(q);
+            let tempdata = [];
+            documentSnapshots.forEach((doc) => {
+                tempdata.push({docID: doc.id, docData: doc.data()})
+            });
+            setRecipesByFollowing(tempdata)
+        } 
+        
     }
 
     const fetchFollowing = async() =>{
@@ -47,27 +64,15 @@ const index = ({navigation}) => {
         const documentSnapshots = await getDocs(colRef);
         let tempdata = [];
         documentSnapshots.forEach((doc) => {
-            console.log("following", doc.id);
+           
             tempdata.push(doc.id)
         });
-        console.log(tempdata);
+       
         if (tempdata.length > 0) {
             fetchRecipesByFollowing(tempdata)
         } else {
 
         }
-    }
-
-    const fetchRecipesByFollowing = async(users) =>{
-        const colRef = collection(db, "recipesAll")
-        const q = query(colRef,where("author", "in", users), orderBy("createdOn", "desc"), limit(10))
-        const documentSnapshots = await getDocs(q);
-        let tempdata = [];
-        documentSnapshots.forEach((doc) => {
-
-            tempdata.push(doc.data())
-        });
-        setRecipesByFollowing(tempdata)
     }
 
 
@@ -85,7 +90,6 @@ const index = ({navigation}) => {
         fetchCuisine()
         fetchLatestPicks()
         fetchFollowing()
-        
     }, [])
     
 
@@ -96,9 +100,9 @@ const index = ({navigation}) => {
                         colors={["#9Bd35A", "#689F38"]}
                         refreshing={loading}
                         onRefresh={() => {
-                            
                             fetchLatestPicks()
                             fetchFollowing()
+                           
                         }}
                     />
                   } style={styles.container}>
@@ -121,7 +125,7 @@ const index = ({navigation}) => {
                     <FlatList
                         style={styles.latestPicksList}
                         data={latestPicks}
-                        renderItem={({item}) => <LatestPick navigation={navigation} item={item}/>}
+                        renderItem={({item}) => <LatestPick navigation={navigation} item={item.docData} itemID={item.docID}/>}
                         keyExtractor={(item, index) => item + index}
                         horizontal={true}
                         ListFooterComponent={
@@ -173,7 +177,7 @@ const index = ({navigation}) => {
                         </View>
                         <FlatList
                         data={recipesByFollowing}
-                        renderItem={({item}) => <LatestPick navigation={navigation} item={item}/>}
+                        renderItem={({item}) => <LatestPick navigation={navigation} item={item.docData} itemID={item.docID}/>}
                         keyExtractor={(item, index) => item + index}
                         contentContainerStyle={{width: "100%", justifyContent: 'center'}}
                         />
@@ -216,7 +220,6 @@ const styles = StyleSheet.create({
     },
     latestPicksList:{
         width: "100%",
-        height:400
     },
     latestPicksListTitle:{
         fontSize: 20,

@@ -5,7 +5,8 @@ import { collection, query, where, getDocs, doc, orderBy, limit, startAfter, sta
 import {app, db} from "../../../../firebase"
 import RecipeSmall from '../../../Components/TrendingComponents/RecipeSmall';
 import Loadinng from '../../../Components/Loadinng';
-
+import ColorPropType from 'react-native/Libraries/DeprecatedPropTypes/DeprecatedColorPropType';
+import * as Colors from '../../../styles/colors'
 
 const index = (props) => {
 
@@ -13,9 +14,7 @@ const index = (props) => {
       fetchRecipes()
     }, [])
 
-    const renderItem = ({ item }) => (
-        <RecipeSmall recipe={item} navigation={props.navigation}/>
-    );
+    
     
     const [searchTags, setSearchTags] = useState(props.navigation.state.params)
     const [recipes, setRecipes] = useState([])
@@ -28,7 +27,7 @@ const index = (props) => {
         const documentSnapshots = await getDocs(q);
         let tempdata = [];
         documentSnapshots.forEach((doc) => {
-            tempdata.push(doc.data())
+            tempdata.push({docID: doc.id, docData: doc.data()})
         });
         setRecipes(tempdata)
         setLoading(false)
@@ -37,13 +36,13 @@ const index = (props) => {
     return (
         <SafeAreaView style={styles.container}>
             <Text style={styles.title}>
-                Results
+                Results for {searchTags}
             </Text>
             {loading?
                 <Loadinng/>:
                 <View style={{flex: 1, alignItems: "center", justifyContent: "center"}}>
                     {recipes.length == 0? 
-                    <Text> No recipe for {searchTags}</Text>
+                    <Text style={{fontSize: 20, color: Colors.BLACK, opacity: 0.5}}> No recipes found for {searchTags}</Text>
                     :
                     <FlatList
                     style={styles.scrollviewContainer}
@@ -55,8 +54,9 @@ const index = (props) => {
                             onRefresh={fetchRecipes}
                         />
                     }
-                    renderItem={renderItem}
-                    keyExtractor={item => item.docID}
+                    renderItem={({item}) =><RecipeSmall item={item.docData} navigation={props.navigation} itemID={item.docID}/>}
+
+                    keyExtractor={(item, index) => item + index}
                     />
                     }
                     

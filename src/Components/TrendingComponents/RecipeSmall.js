@@ -4,26 +4,27 @@ import { PickerItem } from 'react-native/Libraries/Components/Picker/Picker';
 import * as Colors from '../../styles/colors';
 import { Ionicons } from '@expo/vector-icons';
 
-const Recipe = ({navigation, recipe}) => {
+const Recipe = ({navigation, item, itemID}) => {
+  
   return (
     <TouchableOpacity onPress={() => 
-      navigation.navigate('RecipeView', recipe)} style={styles.container}>
+      navigation.navigate('RecipeViewScreen', {...item, itemID})} style={styles.container}>
       <View style={styles.bottomInfoContainer}>
-        <Text style={styles.userName}>
-          {recipe.creator}
-          </Text>
+        {/* <Text style={styles.userName}>
+          {item.creator}
+          </Text> */}
         <Text style={styles.title}>
-         {recipe.title} 
+         {item.title} 
         </Text>
         <Text numberOfLines={3}>
-          {recipe.shortDescription}
+          {item.shortDescription}
         </Text>
         <View style={{flexDirection: 'row', alignItems: 'center',  marginVertical: 5}}>
           <Ionicons name='heart' color={Colors.SECONDARY} size={25}/>
-          <Text style={{color: Colors.SECONDARY, paddingLeft: 10}}>3873</Text>
+          <Text style={{color: Colors.SECONDARY, paddingLeft: 10}}>{item.likes}</Text>
         </View>
       </View>
-      <Image style={styles.thumbnail} resizeMode='cover' source={{uri: recipe.downloadURL}}/>
+      <Image style={styles.thumbnail} resizeMode='cover' source={{uri: item.downloadURL}}/>
 
     </TouchableOpacity>
   );
@@ -35,15 +36,17 @@ const styles = StyleSheet.create({
   container:{
     height: 140,
     justifyContent: 'center',
+    alignItems: 'center',
     flexDirection: 'row',
     padding: 10,
     marginVertical: 7,
+    marginHorizontal: 7,
     borderRadius: 30,
     shadowColor: 'rgb(0, 0, 0)',
     
     shadowOpacity: 0.5,
-    shadowRadius: 10,
-    elevation: 7,
+    shadowRadius: 6,
+    elevation: 4,
     backgroundColor: 'white',
     
   },

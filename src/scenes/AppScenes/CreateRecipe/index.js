@@ -2,16 +2,16 @@ import { StyleSheet, Text, View, TextInput, ScrollView, TouchableOpacity, Image,
 import React,{useState, useEffect} from 'react';
 import * as Colors from '../../../styles/colors';
 import AppHeader from '../../../Components/CommonComponents/AppHeader';
-import { borderLeftColor, color } from 'react-native/Libraries/Components/View/ReactNativeStyleAttributes';
 import { Ionicons, AntDesign } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { getAuth, signOut } from "firebase/auth";
+import { getAuth } from "firebase/auth";
 import {app, db, storage} from '../../../../firebase';
-import { addDoc, collection, getDocs, Timestamp, doc, FieldValue } from 'firebase/firestore';
+import { addDoc, collection, getDocs } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
-import { proc } from 'react-native-reanimated';
 import { FlatList } from 'react-native-gesture-handler';
 import { Entypo } from '@expo/vector-icons';
+import DropDownPicker from 'react-native-dropdown-picker';
+
 
 LogBox.ignoreLogs(['VirtualizedLists should never be nested inside plain ScrollViews']);
 LogBox.ignoreLogs(['`flexWrap: `wrap`` is not supported with the `VirtualizedList` components.Consider using `numColumns` with `FlatList` instead.']);
@@ -46,30 +46,30 @@ const CreateRecipe = ({navigation}) => {
     const [tags, setTags] = useState([])
     const [tag, setTag] = useState("")
     const [confirmUpload, setConfirmUpload] = useState(false)
-    // const [openCuisineDropdown, setOpenCuisineDropdown] = useState(false);
-    // const [cuisine, setCuisine] = useState(null);
-    // const [cuisines, setCuisines] = useState([
-    //   {label: 'Apple', value: 'apple'},
-    //   {label: 'Banana', value: 'banana'}
-    // ]);
+    const [openCuisineDropdown, setOpenCuisineDropdown] = useState(false);
+    const [cuisine, setCuisine] = useState(null);
+    const [cuisines, setCuisines] = useState([
+      {label: 'Apple', value: 'apple'},
+      {label: 'Banana', value: 'banana'}
+    ]);
+
+    DropDownPicker.setListMode("SCROLLVIEW");
+useEffect(() => {
+    fetchCuisine()
+}, [])
 
 
-// useEffect(() => {
-//     fetchCuisine()
-// }, [])
-
-
-    // const fetchCuisine = async() => {
-    //     const colRef = collection(db, "cuisines")
-    //     const snapshot = await getDocs(colRef)
+    const fetchCuisine = async() => {
+        const colRef = collection(db, "cuisines")
+        const snapshot = await getDocs(colRef)
        
-    //     let tempdata = [];
-    //     snapshot.forEach((doc) =>{
-    //         tempdata.push(doc.id)
-    //     })
-    //     console.log(tempdata);
-    //     setCuisines(tempdata)
-    // }
+        let tempdata = [];
+        snapshot.forEach((doc) =>{
+            tempdata.push({label: doc.id, value: doc.id})
+        })
+        console.log(tempdata);
+        setCuisines(tempdata)
+    }
 
     //image picker
     const pickImage = async () => {
@@ -95,7 +95,9 @@ const CreateRecipe = ({navigation}) => {
     const uploadRecipeData = async(downloadURL) =>{
         let tagsFinal = []
         tags.forEach(e => tagsFinal.push(e.tag))
-
+        if(cuisine){
+            tagsFinal.push(cuisine)
+        }
         const titleTags = title.split(" ")
         titleTags.forEach(e => {
             if (!tagsFinal.includes(e)) {
@@ -113,7 +115,8 @@ const CreateRecipe = ({navigation}) => {
             serves: serves,
             downloadURL: downloadURL,
             author: getAuth(app).currentUser.uid,
-            tag: tagsFinal
+            tag: tagsFinal,
+            likes: 0
         })
         navigation.popToTop();
         console.log(docRef);
@@ -400,13 +403,27 @@ const CreateRecipe = ({navigation}) => {
                 placeholderTextColor={Colors.SECONDARY} 
                 value={serves} 
                 onChangeText={setServes}/>
-                  <TextInput 
-                style={styles.inputs} 
-                placeholder='Serves' 
-                keyboardType='numeric'
-                placeholderTextColor={Colors.SECONDARY} 
-                value={serves} 
-                onChangeText={setServes}/>
+               
+            </View>
+          
+            <View style={styles.ingridientsSectionContainer}>
+                <Text style={styles.sectionTitle}>
+                    Cuisine
+                </Text>
+               
+                <DropDownPicker
+                open={openCuisineDropdown}
+                value={cuisine}
+                items={cuisines}
+                setOpen={setOpenCuisineDropdown}
+                setValue={setCuisine}
+                setItems={setCuisines}
+                searchable={true}
+                searchTextInputProps={{
+                    maxLength: 25
+                  }}
+                style={{marginHorizontal: 10, width: "95%"}}
+                />
             </View>
 
             <View style={styles.ingridientsSectionContainer}>
@@ -447,7 +464,7 @@ const styles = StyleSheet.create({
     container:{
         flex: 1,
         backgroundColor: 'white',
-        padding: 10
+        
     },
     pageIntro:{
         fontSize: 24,

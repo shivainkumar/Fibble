@@ -12,6 +12,7 @@ import AppHeader from '../../../Components/CommonComponents/AppHeader';
 const index = ({navigation}) => {
 
     const [searchRecipeText, setSearchRecipeText] = useState("");
+    const [searchUserText, setSearchUserText] = useState("");
     const [recipes, setRecipes] = useState([]);
     const [loading, setLoading] = useState(false);
     const [enabledRecipe, setEnabledRecipe] = useState(false);
@@ -25,9 +26,7 @@ const index = ({navigation}) => {
         navigation.navigate('Results',tags)
     }
 
-    const renderItem = ({ item }) => (
-        <RecipeSmall recipe={item} navigation={navigation}/>
-    );
+   
     const fetchRecipes = async() =>{
         setLoading(true)
         let tags = searchRecipeText.split(" ")
@@ -37,8 +36,7 @@ const index = ({navigation}) => {
         const documentSnapshots = await getDocs(q);
         let tempdata = [];
         documentSnapshots.forEach((doc) => {
-            console.log(doc.data());
-            tempdata.push(doc.data())
+            tempdata.push({docID: doc.id, docData: doc.data()})
         });
         setRecipes(tempdata)
         setLoading(false)
@@ -46,7 +44,7 @@ const index = ({navigation}) => {
 
     const ListItem = ({item}) =>{
         return(
-            <TouchableOpacity onPress={() => navigation.navigate('Profile', item)} style={styles.listItem}>
+            <TouchableOpacity onPress={() => navigation.navigate('ProfileScreen', item)} style={styles.listItem}>
                 <Image style={styles.listImage} source={{uri: item.data.photoURL}}/>
                 <View style={styles.listInfo}>
                     <Text style={styles.listText}>{item.data.displayName}</Text>
@@ -57,11 +55,11 @@ const index = ({navigation}) => {
         )
     }
 
-    const fetchUsers = async(search) =>{
+    const fetchUsers = async() =>{
         setLoading(true)
-        if (search) {
+        if (searchUserText) {
             const userRef = collection(db, "users")
-            const q = query(userRef, where("displayName", ">=", search.trim()))
+            const q = query(userRef, where("displayName", ">=", searchUserText.trim()))
             const querySnapshot = await getDocs(q);
             let tempdata = [];
             querySnapshot.forEach((doc) => {
@@ -78,14 +76,14 @@ const index = ({navigation}) => {
         
         <SafeAreaView style={styles.container}>
             <AppHeader/>
-            <View style={{flex: 1}}>
+            <View style={{flex: 1, padding: 10}}>
                 <View style={styles.textSearchContainer}>
                     <Ionicons name="search-circle" size={45} color={enabledRecipe ? Colors.SECONDARY : Colors.PRIMARY} />
                     <TextInput 
                     style={styles.inputs} 
                     placeholder={enabledRecipe? 'Search  (Cuisines, Diets, Recipe titles)':
                     'Search Chefs'} 
-                    onChangeText={enabledRecipe? setSearchRecipeText: fetchUsers} 
+                    onChangeText={enabledRecipe? setSearchRecipeText: setSearchUserText} 
                     />
                     <View style={{width: '20%', alignItems: 'center'}}>
                         {enabledRecipe?
@@ -107,7 +105,13 @@ const index = ({navigation}) => {
                     
                 </View>
                 <View>
-                    <Button title='Search' color={enabledRecipe ? Colors.SECONDARY : Colors.PRIMARY} onPress={() => fetchRecipes()}/>
+                    <Button title='Search' color={enabledRecipe ? Colors.SECONDARY : Colors.PRIMARY} onPress={() => {
+                        if(enabledRecipe){
+                            fetchRecipes()
+                        }else{
+                            fetchUsers()
+                        }
+                    }}/>
                 </View>
             </View>
             <View style={{flex: 5, width: "100%"}}>
@@ -125,7 +129,8 @@ const index = ({navigation}) => {
                                     onRefresh={fetchRecipes}
                                 />
                             }
-                            renderItem={renderItem}
+                            renderItem={({item}) =><RecipeSmall item={item.docData} navigation={navigation} itemID={item.docID}/>
+                        }
                             keyExtractor={(item, index) => item + index}
                             />:
                             <FlatList
@@ -156,7 +161,7 @@ const styles = StyleSheet.create({
     container:{
         flex: 1,
         backgroundColor: Colors.WHITE,
-        padding: 10,
+        
         justifyContent: 'center',
         alignItems: 'center'
     },

@@ -17,11 +17,33 @@ const MyProfile = ({navigation}) => {
     const [data, setData] = useState([])
     const [loading, setLoading] = useState(true)
     const [lastVisible, setLastVisible] = useState(0)
+    const [followersUids, setFollowersUids] = useState([])
+    const [followingUids, setFollowingUids] = useState([])
 
     useEffect(async() => {
         fetchData()
+        fetchFollowerFollowingData()
     }, [])
 
+    const fetchFollowerFollowingData = async() =>{
+        const docRefFollowers = doc(db, "Followers", getAuth(app).currentUser.uid);
+        const colRefFollowers = collection(docRefFollowers, "userFollowers");
+        const documentSnapshotsFollowers = await getDocs(colRefFollowers);
+        let tempdataFollowers = [];
+        documentSnapshotsFollowers.forEach((doc) => {
+            tempdataFollowers.push(doc.id)
+        });
+        setFollowersUids(tempdataFollowers)
+
+        const docRefFollowing = doc(db, "Following", getAuth(app).currentUser.uid);
+        const colRefFollowing = collection(docRefFollowing, "userFollowing");
+        const documentSnapshotsFollowing = await getDocs(colRefFollowing);
+        let tempdataFollowing = [];
+        documentSnapshotsFollowing.forEach((doc) => {
+            tempdataFollowing.push(doc.id)
+        });
+        setFollowingUids(tempdataFollowing)
+    }
 
     const fetchData = async() =>{
         setLoading(true)
@@ -33,7 +55,7 @@ const MyProfile = ({navigation}) => {
         let tempdata = [];
         setLastVisible(documentSnapshots.size)
         documentSnapshots.forEach((doc) => {
-            tempdata.push(doc.data())
+            tempdata.push({docID: doc.id, docData: doc.data()})
         });
         setData(tempdata)
         const lastVisible = documentSnapshots.docs[documentSnapshots.docs.length-1];
@@ -48,17 +70,15 @@ const MyProfile = ({navigation}) => {
         const q = query(colRef, where("author", "==", getAuth(app).currentUser.uid), startAfter(lastVisible), orderBy("createdOn", "desc"), limit(5))
         const documentSnapshots = await getDocs(q);
         let tempdata = data;
-        console.log("before ",tempdata);
+       
         documentSnapshots.forEach((doc) => {
-            console.log("adddin",doc.data());
-            tempdata.push(doc.data())
+           
+            tempdata.push({docID: doc.id, docData: doc.data()})
         }); 
         const templast = documentSnapshots.docs[documentSnapshots.docs.length-1];
         setLastVisible(templast)
         setData(tempdata)
     }
-
-   
 
     const renderItem = ({ item }) => (
         <RecipeSmall recipe={item} navigation={navigation}/>
@@ -66,7 +86,7 @@ const MyProfile = ({navigation}) => {
 
     return (
         <SafeAreaView style={styles.container}>
-             <AppHeader/>
+            <AppHeader/>
             {loading? 
             <ActivityIndicator size='large' style={{flex:1}} color={Colors.SECONDARY}/>:
             <FlatList 
@@ -77,21 +97,26 @@ const MyProfile = ({navigation}) => {
                     <RefreshControl
                         colors={["#9Bd35A", "#689F38"]}
                         refreshing={loading}
-                        onRefresh={fetchData}
+                        onRefresh={() => {
+                           fetchData()
+                           fetchFollowerFollowingData()
+                        }}
                     />
                   }
-                renderItem={renderItem}
+                  renderItem={({item}) =><RecipeSmall item={item.docData} navigation={navigation} itemID={item.docID}/>}
                 ListHeaderComponent={
                     <View>
-                        <UserInfo user={getAuth(app).currentUser} navigation={navigation}/>
-                        
+                        <UserInfo user={getAuth(app).currentUser} navigation={navigation} followers={followersUids} following={followingUids}/>
                     </View>            
             }
             ListHeaderComponentStyle={{flex: 1}}
             //contentContainerStyle={{flex: 3}}
                 ListFooterComponent={
                     <View>
-                        <Button title='Load more' color={Colors.SECONDARY} onPress={() => fetchMoreData()}/> 
+                        {lastVisible < 5? 
+                            <Button title='Load more' color={Colors.SECONDARY} onPress={() => fetchMoreData()}/> 
+                            : null
+                    }
                     </View>
                 }
                
